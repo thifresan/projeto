@@ -1,0 +1,35 @@
+import paramiko
+
+host = ["10.1.1.121", "10.1.1.122", "10.1.1.123", "10.1.1.124", "10.1.1.125", "10.1.1.126", "10.1.1.127", "10.1.1.128", "10.1.1.129"]
+
+vms = ['5999'   #VM-S159
+      ,'6608'   #VM-S147
+      ,'7167'   #VM-S148
+      ,'10713'  #VM-S180
+      ,'8410'	#VM-S181
+      ,'10109'  #VM-S084
+      ,'6614'	#VM-S101
+      ,'6711'   #VM-S109
+      ,'6651'	#VM-S163
+      ,'8616'	#VM-S150
+      ]
+
+port = 22
+username = "root"
+password = "teste@123"
+
+for ip_host in host: #acessa o host
+    ssh=paramiko.SSHClient()
+    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    ssh.connect(ip_host, port, username, password)
+
+    for vm in vms: #passa pelas VMS
+        cmd = 'vim-cmd vmsvc/snapshot.create', vm, 'snap_teste'
+        stdin, stdout, stderr = ssh.exec_command(cmd) #roda o comando no host
+        outlines = stdout.readlines() #joga as informações do cmd para variável outilane
+        resp = ''.join(outlines)
+        print (outlines)
+
+        if  (outlines[0] != "(vim.fault.NotFound) {" and outlines[1] != "(vim.fault.NotFound) {"): #verifica se o output foi diferente do output de erro
+           break #se chegou aqui é por que o comando funcionou então a vm foi achada
+                 #logo é possível sair desse loop e mudar o host
